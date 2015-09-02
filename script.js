@@ -11,6 +11,19 @@ if (navigator.requestMIDIAccess) {
 
 function onMIDISuccess(midiAccess){
   console.log('MIDI access object', midiAccess);
+
+  midi = midiAccess;
+  var inputs = midi.inputs.values();
+
+  for(var input = inputs.next(); input && !input.done; input = inputs.next()) {
+    input.value.onmidimessage = onMIDIMessage;
+  }
+}
+
+function onMIDIMessage(message){
+  data = message.data;
+  console.log('MIDI data', data);
+
 }
 
 
