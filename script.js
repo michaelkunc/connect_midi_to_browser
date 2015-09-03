@@ -20,11 +20,41 @@ function onMIDISuccess(midiAccess){
   }
 }
 
-function onMIDIMessage(message){
-  data = message.data;
+function onMIDIMessage(event){
+  data = event.data,
+  cmd = data[0] >> 4,
+  channel = data[0] & 0xf,
+  type = data[0] & 0xf,
+  note  = data[1],
+  velocity = data[2];
+
+  switch (type) {
+    case 144:
+      noteOn(note,velocity);
+      break;
+    case 128:
+      noteOff(note, velocity);
+      break;
+  }
+
+
   console.log('MIDI data', data);
 
 }
+
+function frequencyFromNoteNumber(note){
+  return 440 * Math.pow(2, (note-69) / 12);
+}
+
+
+function noteOn(midiNote, velocity){
+  player(midiNote, velocity);
+}
+
+function noteOff(midiNote, velocity){
+  player(midiNote, velocity);
+}
+
 
 
 function onMIDIFailure(e){
