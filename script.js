@@ -2,7 +2,6 @@ console.log('is this thing on?');
 
 var context = new AudioContext(),
   masterVolume = context.createGain();
-
   masterVolume.connect(context.destination);
 
 
@@ -16,7 +15,7 @@ if (navigator.requestMIDIAccess) {
 }
 
 function onMIDISuccess(midiAccess){
-  // console.log('MIDI access object', midiAccess);
+  console.log('MIDI access object', midiAccess);
 
   midi = midiAccess;
   var inputs = midi.inputs.values();
@@ -26,6 +25,28 @@ function onMIDISuccess(midiAccess){
   }
 }
 
+function Note(waveform, context, note, velocity)
+{
+  this.note = note;
+  this.velocity = velocity;
+  this.osc = context.createOscillator();
+  this.type = waveform;
+  this.osc.connect(context.destination);
+}
+
+Note.prototype.noteOn(){
+
+  this.osc.start(context.currentTime);
+}
+
+Note.prototype.noteOff(){
+  this.osc.stop(context.currentTime);
+}
+
+// function frequencyFromNoteNumber(note){
+//   return 440 * Math.pow(2, (note-69) / 12);
+// }
+
 function onMIDIMessage(event){
   data = event.data,
   cmd = data[0] >> 4,
@@ -33,36 +54,16 @@ function onMIDIMessage(event){
   type = data[0],
   note  = data[1],
   velocity = data[2];
-
+  var sound;
   if (type == 144) {
-    noteOn(note, velocity);
+     sound = new Note('sine', context, note, velocity);
   } else {
-    noteOff(note, velocity);
+    sound.noteOff();
   }
 
   console.log('MIDI data', data);
 
 }
-
-// function frequencyFromNoteNumber(note){
-//   return 440 * Math.pow(2, (note-69) / 12);
-// }
-
-// will eventually want to create a new osc object right now I am binding the osc to the window. which is
-// why I can't play chords
-function noteOn(midiNote, velocity){
-  this.osc = context.createOscillator();
-  this.osc.type = 'sine';
-
-  this.osc.connect(context.destination);
-  this.osc.start(context.currentTime);
-}
-
-function noteOff(midiNote, velocity){
-  this.osc.stop(context.currentTime);
-}
-
-
 
 function onMIDIFailure(e){
   console.log("No access to your midi device " + e);
